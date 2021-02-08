@@ -96,3 +96,6 @@ export EDITOR='vim'
 
 #### Aliases
 alias vim="nvim"
+
+#### Python
+export PYTHONSTARTUP=~/.pythonrc
