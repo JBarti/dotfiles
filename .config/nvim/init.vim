@@ -77,8 +77,10 @@ autocmd CursorHold * silent call CocActionAsync('highlight')
 
 " Ale setup
 
-let b:ale_linters = {'python': ['pylint'], 'c': ['gcc'], 'cpp': ['g++'], ' javascript': ['eslint']}
+let b:ale_linters = {'python': ['flake8'], 'c': ['gcc'], 'cpp': ['g++'], ' javascript': ['eslint']}
 let g:ale_fixers = {'python': ['black'], 'javascript': ['eslint'], 'css': ['prettier'], 'html': ['prettier']}
+let g:ale_linters_ignore = {'python': ['pylint']}
+let g:ale_python_flake8_auto_pipenv = 1
 let g:ale_python_auto_pipenv = 1
 let pipenv_venv_path = system('pipenv --venv')
 
@@ -109,6 +111,7 @@ set nowrap
 
 nnoremap <F4> :NERDTreeToggle<CR>
 nnoremap <C-s> :wa<CR>
+" tnoremap <Esc> <C-\><C-n>
 let python_highlight_all = 1
 
 
