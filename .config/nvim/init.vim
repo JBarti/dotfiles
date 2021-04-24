@@ -1,7 +1,6 @@
 call plug#begin('~/.config/nvim/plugged')
 
 Plug 'dracula/vim', { 'as': 'dracula' }
-Plug 'vim-airline/vim-airline'
 Plug 'preservim/nerdtree'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'airblade/vim-gitgutter'
@@ -12,6 +11,7 @@ Plug 'Glench/Vim-Jinja2-Syntax'
 Plug 'tpope/vim-fugitive'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
+Plug 'antoinemadec/coc-fzf'
 Plug 'gregsexton/MatchTag'
 Plug 'pangloss/vim-javascript'
 Plug 'hdima/python-syntax'
@@ -77,12 +77,14 @@ autocmd CursorHold * silent call CocActionAsync('highlight')
 
 " Ale setup
 
-let b:ale_linters = {'python': ['flake8'], 'c': ['gcc'], 'cpp': ['g++'], ' javascript': ['eslint']}
-let g:ale_fixers = {'python': ['black'], 'javascript': ['eslint'], 'css': ['prettier'], 'html': ['prettier']}
-let g:ale_linters_ignore = {'python': ['pylint']}
+let b:ale_linters = {'python': ['flake8', 'pylint'], 'c': ['gcc'], 'cpp': ['g++'], ' javascript': ['eslint']}
+let g:ale_fixers = {'javascript': ['eslint'], 'css': ['prettier'], 'html': ['prettier']}
 let g:ale_python_flake8_auto_pipenv = 1
 let g:ale_python_auto_pipenv = 1
-let pipenv_venv_path = system('pipenv --venv')
+let g:ale_echo_msg_error_str = 'E'
+let g:ale_echo_msg_warning_str = 'W'
+let g:ale_echo_msg_format = '[%linter%] %s [%severity%]'
+
 
 
 " NERDTree setup
@@ -92,7 +94,6 @@ let NERDTreeShowHidden=1
 " Git gutter setup
 
 nmap gt :GitGutterLineHighlightsToggle<CR>
-
 
 
 set number
@@ -111,25 +112,12 @@ set nowrap
 
 nnoremap <F4> :NERDTreeToggle<CR>
 nnoremap <C-s> :wa<CR>
-" tnoremap <Esc> <C-\><C-n>
 let python_highlight_all = 1
 
 
-" Airline setup
-au User AirlineAfterInit  :let g:airline_section_z = airline#section#create(['windowswap', 'linenr', 'maxlinenr', ':%v'])
-let g:airline#extensions#coc#enabled = 0 " Disable additional coc.nvim data in airline
-let g:airline#extensions#tabline#enabled = 1
-nmap t1 <Plug>AirlineSelectTab1
-nmap t2 <Plug>AirlineSelectTab2
-nmap t3 <Plug>AirlineSelectTab3
-nmap t4 <Plug>AirlineSelectTab4
-nmap t5 <Plug>AirlineSelectTab5
-nmap t6 <Plug>AirlineSelectTab6
-nmap t7 <Plug>AirlineSelectTab7
-nmap t8 <Plug>AirlineSelectTab8
-nmap t9 <Plug>AirlineSelectTab9
-nmap th <Plug>AirlineSelectPrevTab
-nmap tl <Plug>AirlineSelectNextTab
+" Tabbing setup
+nmap th :tabprevious<CR>
+nmap tl :tabnext<CR>
 nmap tn :tabnew<CR>
 
  

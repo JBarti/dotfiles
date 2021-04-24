@@ -32,13 +32,13 @@ It is also written in Python (yay).
 
 ## Setting up NeoVim:
 
-NeoVim is installed as an [appimage](https://appimage.github.io/neovim/).
+NeoVim should be downloaded as an [appimage](https://appimage.github.io/neovim/) and placed inside ~/Documents/AppImages as `nvim.appimage`.
 
-Install vim plugged for neovim plugin managment:
+Install vim plugged for neovim plugin management:
 
 ```sh
-curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
-    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 ```
 
 To enable fuzzy searching install the `silversearcher-ag` package.
