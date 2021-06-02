@@ -1,24 +1,27 @@
+let g:polyglot_disabled = ['sensible']
+
 call plug#begin('~/.config/nvim/plugged')
 
 Plug 'dracula/vim', { 'as': 'dracula' }
-Plug 'vim-airline/vim-airline'
+Plug 'folke/tokyonight.nvim'
 Plug 'preservim/nerdtree'
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'airblade/vim-gitgutter'
 Plug 'jiangmiao/auto-pairs'
 Plug 'mattn/emmet-vim'
-Plug 'dense-analysis/ale'
-Plug 'Glench/Vim-Jinja2-Syntax'
 Plug 'tpope/vim-fugitive'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'gregsexton/MatchTag'
-Plug 'pangloss/vim-javascript'
-Plug 'hdima/python-syntax'
 Plug 'Vimjas/vim-python-pep8-indent'
-Plug 'octol/vim-cpp-enhanced-highlight'
+Plug 'heavenshell/vim-pydocstring', { 'do': 'make install' }
+Plug 'sheerun/vim-polyglot'
+
+Plug 'neovim/nvim-lspconfig'
+Plug 'nvim-lua/completion-nvim'
+Plug 'folke/trouble.nvim'
 
 call plug#end()
+
 
 " colorscheme setup
 colorscheme dracula
@@ -30,70 +33,8 @@ set shiftwidth=4    " number of spaces to use for autoindent
 set smarttab
 set smartindent
 set cindent
-
-filetype plugin indent on
-
-
-
-
-" COC autocompletion setup
-set hidden
-set nobackup
-set nowritebackup
-set updatetime=300
-
-" Use tab for trigger completion with characters ahead and navigate.
-" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
-" other plugin before putting this into your config.
-inoremap <silent><expr> <TAB>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<TAB>" :
-      \ coc#refresh()
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
-
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
-endfunction
-
-" Use <c-space> to trigger completion.
-inoremap <silent><expr> <c-space> coc#refresh()
-
-" GoTo code navigation.
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
-
-" Rename symbol
-"nnoremap cg <Plug>(coc-rename)
-nmap <F2> <Plug>(coc-rename)
-
-
-" Highlight the symbol and its references when holding the cursor.
-autocmd CursorHold * silent call CocActionAsync('highlight')
-
-
-
-" Ale setup
-
-let b:ale_linters = {'python': ['flake8'], 'c': ['gcc'], 'cpp': ['g++'], ' javascript': ['eslint']}
-let g:ale_fixers = {'python': ['black'], 'javascript': ['eslint'], 'css': ['prettier'], 'html': ['prettier']}
-let g:ale_linters_ignore = {'python': ['pylint']}
-let g:ale_python_flake8_auto_pipenv = 1
-let g:ale_python_auto_pipenv = 1
-let pipenv_venv_path = system('pipenv --venv')
-
-
-" NERDTree setup
-
-let NERDTreeShowHidden=1
-
-" Git gutter setup
-
-nmap gt :GitGutterLineHighlightsToggle<CR>
-
-
+set updatetime=100
+set clipboard+=unnamedplus
 
 set number
 set showmatch
@@ -109,35 +50,108 @@ set cursorline
 set laststatus=2
 set nowrap
 
-nnoremap <F4> :NERDTreeToggle<CR>
+filetype plugin indent on
+
 nnoremap <C-s> :wa<CR>
-" tnoremap <Esc> <C-\><C-n>
+
+
 let python_highlight_all = 1
 
 
-" Airline setup
-au User AirlineAfterInit  :let g:airline_section_z = airline#section#create(['windowswap', 'linenr', 'maxlinenr', ':%v'])
-let g:airline#extensions#coc#enabled = 0 " Disable additional coc.nvim data in airline
-let g:airline#extensions#tabline#enabled = 1
-nmap t1 <Plug>AirlineSelectTab1
-nmap t2 <Plug>AirlineSelectTab2
-nmap t3 <Plug>AirlineSelectTab3
-nmap t4 <Plug>AirlineSelectTab4
-nmap t5 <Plug>AirlineSelectTab5
-nmap t6 <Plug>AirlineSelectTab6
-nmap t7 <Plug>AirlineSelectTab7
-nmap t8 <Plug>AirlineSelectTab8
-nmap t9 <Plug>AirlineSelectTab9
-nmap th <Plug>AirlineSelectPrevTab
-nmap tl <Plug>AirlineSelectNextTab
-nmap tn :tabnew<CR>
+" vim-pydocstring
+let g:pydocstring_formatter = "google"
+let g:pydocstring_doq_path = "/usr/local/bin/doq"
 
- 
-" Custom keybindings
+
+" NERDTree setup
+
+let NERDTreeShowHidden=1
+nnoremap <F4> :NERDTreeToggle<CR>
+
+
+" Git gutter setup
+
+nmap gt :GitGutterLineHighlightsToggle<CR>
+
+
+" fzf keybindings
 nnoremap ff :Files<CR>
 nnoremap fb :Buffers<CR>
 nnoremap fa :Ag<CR>
 
-" C syntax highlighting
-let g:cpp_member_variable_highlight = 1
-let g:cpp_posix_standard = 1
+
+" Tabing setup
+nnoremap th :tabprevious<CR>
+nnoremap tl :tabnext<CR>
+nnoremap tn :tabnew<CR>
+
+
+" LSP config
+lua << EOF
+local nvim_lsp = require('lspconfig')
+
+
+-- Use an on_attach function to only map the following keys 
+-- after the language server attaches to the current buffer
+local on_attach = function(client, bufnr)
+	print("LSP started");
+	require'completion'.on_attach()
+	local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
+	local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+	local opts = {noremap=ture, silent=true}
+
+	buf_set_keymap('n', 'gD', '<Cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+	buf_set_keymap('n', 'gd', '<Cmd>lua vim.lsp.buf.definition()<CR>', opts)
+	buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+	buf_set_keymap('n', 'gI', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+	buf_set_keymap('n', '<F2>', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+  buf_set_keymap('n', '<C-a>', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+end
+
+nvim_lsp.pyright.setup{
+	settings = {
+		python = {
+			venvPath = "~/.local/share/virtualenvs"	
+		}
+	},
+	on_attach = on_attach
+}
+
+nvim_lsp.tsserver.setup{
+	on_attach = on_attach
+}
+
+require('trouble').setup{
+    fold_open = "v", -- icon used for open folds
+    fold_closed = ">", -- icon used for closed folds
+    indent_lines = false, -- add an indent guide below the fold icons
+	icons = false,
+    signs = {
+        -- icons / text used for a diagnostic
+        error = "error",
+        warning = "warn",
+        hint = "hint",
+        information = "info"
+    },
+	mode = "lsp_workspace_diagnostics",
+	auto_preview = false,
+}
+EOF
+
+" Use <Tab> and <S-Tab> to navigate through popup menu
+inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
+inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+
+
+" Set completeopt to have a better completion experience
+set completeopt=menuone,noinsert,noselect
+
+" Avoid showing message extra message when using completion
+set shortmess+=c
+
+" jsx-pretty
+let g:vim_jsx_pretty_highlight_close_tag = 1 
+
+" Use CTRL+T to toggle trouble.nvim
+nnoremap <F5> :TroubleToggle lsp_document_diagnostics<CR>
+nnoremap <F6> :TroubleToggle lsp_workspace_diagnostics<CR>

@@ -43,6 +43,13 @@ curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
 
 To enable fuzzy searching install the `silversearcher-ag` package.
 
+LSP setup:
+
+```
+npm -g intall typescript typescript-language server
+pip3 install --user pyright
+```
+
 
 ## Setting up zsh:
 
