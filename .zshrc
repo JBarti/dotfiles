@@ -102,3 +102,8 @@ alias nvim="~/Documents/AppImages/nvim.appimage"
 
 #### Python
 export PYTHONSTARTUP=~/.pythonrc
+
+source ~/.profile
+
+# Used for pyright langserver
+export NODE\_OPTIONS=--experimental-worker

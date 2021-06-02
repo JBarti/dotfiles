@@ -43,6 +43,13 @@ sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.
 
 To enable fuzzy searching install the `silversearcher-ag` package.
 
+LSP setup:
+
+```
+npm -g intall typescript typescript-language server
+npm -g install pyright
+```
+
 
 ## Setting up zsh:
 
@@ -76,3 +83,20 @@ The panel is made to extend across two displays, if you have just one, delete th
 
 [Ulauncher](https://ulauncher.io/#Download) is awesome. It does the job of helping you find and run apps, it also searches through flatpaks, just make sure to download the [Arc-Dark ulauncher theme](https://github.com/iboyperson/Arc-Dark-ULauncher) since the whole environment uses it. Or you can leave the default white theme if you're a monster or something, idc.
 
+
+## NPM sudo access fix
+
+```
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+```
+
+In your preferred text editor, open or create a ~/.profile file and add this line:
+```
+export PATH=~/.npm-global/bin:$PATH
+```
+
+Add to zshrc
+```
+source ~/.profile
+```
