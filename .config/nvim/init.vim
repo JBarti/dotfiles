@@ -3,23 +3,23 @@ let g:polyglot_disabled = ['sensible']
 call plug#begin('~/.config/nvim/plugged')
 
 Plug 'dracula/vim', { 'as': 'dracula' }
-Plug 'folke/tokyonight.nvim'
 Plug 'preservim/nerdtree'
 Plug 'airblade/vim-gitgutter'
 Plug 'jiangmiao/auto-pairs'
 Plug 'mattn/emmet-vim'
 Plug 'tpope/vim-fugitive'
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
 Plug 'gregsexton/MatchTag'
-Plug 'Vimjas/vim-python-pep8-indent'
 Plug 'heavenshell/vim-pydocstring', { 'do': 'make install' }
-Plug 'sheerun/vim-polyglot'
 
 Plug 'neovim/nvim-lspconfig'
-Plug 'nvim-lua/completion-nvim'
-Plug 'folke/trouble.nvim'
+Plug 'glepnir/lspsaga.nvim'
+Plug 'hrsh7th/nvim-compe'
+Plug 'chemzqm/vim-jsx-improve'
 
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
 call plug#end()
 
 
@@ -35,6 +35,7 @@ set smartindent
 set cindent
 set updatetime=100
 set clipboard+=unnamedplus
+set expandtab
 
 set number
 set showmatch
@@ -70,14 +71,15 @@ nnoremap <F4> :NERDTreeToggle<CR>
 
 
 " Git gutter setup
-
 nmap gt :GitGutterLineHighlightsToggle<CR>
 
 
-" fzf keybindings
-nnoremap ff :Files<CR>
-nnoremap fb :Buffers<CR>
-nnoremap fa :Ag<CR>
+" telescope keybindings
+nnoremap ff <cmd>lua require('telescope.builtin').find_files()<cr>
+nnoremap fa <cmd>lua require('telescope.builtin').live_grep()<cr>
+nnoremap fb <cmd>lua require('telescope.builtin').buffers()<cr>
+nnoremap fr <cmd>lua require('telescope.builtin').lsp_references()<cr>
+nnoremap fd <cmd>lua require('telescope.builtin').lsp_references()<cr>
 
 
 " Tabing setup
@@ -89,23 +91,23 @@ nnoremap tn :tabnew<CR>
 " LSP config
 lua << EOF
 local nvim_lsp = require('lspconfig')
-
+local saga = require 'lspsaga'
 
 -- Use an on_attach function to only map the following keys 
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
 	print("LSP started");
-	require'completion'.on_attach()
+	-- require'completion'.on_attach()
 	local function buf_set_keymap(...) vim.api.nvim_buf_set_keymap(bufnr, ...) end
 	local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
 	local opts = {noremap=ture, silent=true}
-
-	buf_set_keymap('n', 'gD', '<Cmd>lua vim.lsp.buf.declaration()<CR>', opts)
-	buf_set_keymap('n', 'gd', '<Cmd>lua vim.lsp.buf.definition()<CR>', opts)
-	buf_set_keymap('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
-	buf_set_keymap('n', 'gI', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
-	buf_set_keymap('n', '<F2>', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
-  buf_set_keymap('n', '<C-a>', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+    saga.init_lsp_saga {
+        error_sign = 'E',
+        warn_sign = 'W',
+        hint_sign = 'H',
+        infor_sign = 'I',
+        border_style = "round",
+    }
 end
 
 nvim_lsp.pyright.setup{
@@ -121,37 +123,80 @@ nvim_lsp.tsserver.setup{
 	on_attach = on_attach
 }
 
-require('trouble').setup{
-    fold_open = "v", -- icon used for open folds
-    fold_closed = ">", -- icon used for closed folds
-    indent_lines = false, -- add an indent guide below the fold icons
-	icons = false,
-    signs = {
-        -- icons / text used for a diagnostic
-        error = "error",
-        warning = "warn",
-        hint = "hint",
-        information = "info"
-    },
-	mode = "lsp_workspace_diagnostics",
-	auto_preview = false,
+require'compe'.setup {
+  enabled = true;
+  autocomplete = true;
+  debug = false;
+  min_length = 1;
+  preselect = 'enable';
+  throttle_time = 80;
+  source_timeout = 200;
+  resolve_timeout = 800;
+  incomplete_delay = 400;
+  max_abbr_width = 100;
+  max_kind_width = 100;
+  max_menu_width = 100;
+  documentation = {
+    border = { '', '' ,'', ' ', '', '', '', ' ' }, -- the border option is the same as `|help nvim_open_win|`
+    winhighlight = "NormalFloat:CompeDocumentation,FloatBorder:CompeDocumentationBorder",
+    max_width = 120,
+    min_width = 60,
+    max_height = math.floor(vim.o.lines * 0.3),
+    min_height = 1,
+  };
+
+  source = {
+    path = true;
+    buffer = true;
+    calc = true;
+    nvim_lsp = true;
+    nvim_lua = true;
+    treesitter = true;
+  };
 }
+
+
+require'nvim-treesitter.configs'.setup {
+  ensure_installed = "maintained", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
+  highlight = {
+    enable = true,              -- false will disable the whole extension
+    additional_vim_regex_highlighting = false,
+  },
+  indent = {
+    enable = true,
+  }
+}
+
+require('telescope').setup{ defaults = { file_ignore_patterns = {"node_modules"} } }
 EOF
 
-" Use <Tab> and <S-Tab> to navigate through popup menu
-inoremap <expr> <Tab>   pumvisible() ? "\<C-n>" : "\<Tab>"
-inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<S-Tab>"
+" show hover doc
+nnoremap <silent>K :Lspsaga hover_doc<CR>
 
+" show diagnostics
+nnoremap <silent>cd :Lspsaga show_line_diagnostics<CR>
 
-" Set completeopt to have a better completion experience
-set completeopt=menuone,noinsert,noselect
+" async LSP finder
+nnoremap <silent>gd <Cmd>Lspsaga lsp_finder<CR>
+" scroll down hover doc or scroll in definition preview
+nnoremap <silent> <C-f> <cmd>lua require('lspsaga.action').smart_scroll_with_saga(1)<CR>
+" scroll up hover doc
+nnoremap <silent> <C-b> <cmd>lua require('lspsaga.action').smart_scroll_with_saga(-1)<CR>
 
-" Avoid showing message extra message when using completion
-set shortmess+=c
+" code actions
+nnoremap <silent>ca :Lspsaga code_action<CR>
+
+" rename
+nnoremap <silent><F2> :Lspsaga rename<CR>
+" close rename win use <C-c> in insert mode or `q` in noremal mode or `:q`
 
 " jsx-pretty
 let g:vim_jsx_pretty_highlight_close_tag = 1 
 
-" Use CTRL+T to toggle trouble.nvim
-nnoremap <F5> :TroubleToggle lsp_document_diagnostics<CR>
-nnoremap <F6> :TroubleToggle lsp_workspace_diagnostics<CR>
+" compe
+set completeopt=menuone,noselect
+inoremap <silent><expr> <C-Space> compe#complete()
+inoremap <silent><expr> <CR>      compe#confirm('<CR>')
+inoremap <silent><expr> <C-e>     compe#close('<C-e>')
+inoremap <silent><expr> <TAB> pumvisible() ? "\<C-n>" : "\<TAB>"
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
