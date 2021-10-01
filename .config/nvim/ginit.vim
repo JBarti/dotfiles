@@ -1,7 +1,7 @@
 " Set Editor Font
 if exists(':GuiFont')
     " Use GuiFont! to ignore font errors
-    GuiFont Fira Code:h14
+    GuiFont Fira Code:h12
 endif
 
 " Disable GUI Tabline

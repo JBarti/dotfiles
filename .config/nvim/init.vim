@@ -14,7 +14,6 @@ Plug 'heavenshell/vim-pydocstring', { 'do': 'make install' }
 Plug 'neovim/nvim-lspconfig'
 Plug 'glepnir/lspsaga.nvim'
 Plug 'hrsh7th/nvim-compe'
-Plug 'chemzqm/vim-jsx-improve'
 
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
