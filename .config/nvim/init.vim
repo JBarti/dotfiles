@@ -19,6 +19,8 @@ Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim'
+
+Plug 'Vimjas/vim-python-pep8-indent'
 call plug#end()
 
 
@@ -29,8 +31,6 @@ set termguicolors
 set tabstop=4       " number of visual spaces per TAB
 set softtabstop=4   " number of spaces in tab when editing
 set shiftwidth=4    " number of spaces to use for autoindent
-set smarttab
-set smartindent
 set cindent
 set updatetime=100
 set clipboard+=unnamedplus
@@ -122,6 +122,10 @@ nvim_lsp.tsserver.setup{
 	on_attach = on_attach
 }
 
+nvim_lsp.intelephense.setup{
+	on_attach = on_attach
+}
+
 require'compe'.setup {
   enabled = true;
   autocomplete = true;
@@ -163,10 +167,12 @@ require'nvim-treesitter.configs'.setup {
   },
   indent = {
     enable = true,
+    disable = {"python"},
   }
 }
 
 require('telescope').setup{ defaults = { file_ignore_patterns = {"node_modules"} } }
+vim.lsp.set_log_level("info")
 EOF
 
 " show hover doc
