@@ -21,7 +21,12 @@ Plug 'nvim-telescope/telescope.nvim'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
 Plug 'Vimjas/vim-python-pep8-indent'
+
+Plug 'vim-scripts/PDV--phpDocumentor-for-Vim'
 call plug#end()
+
+" PHPDoc
+nnoremap gc :call PhpDocSingle()<CR>
 
 " JSX pretty
 let g:vim_jsx_pretty_highlight_close_tag = 1
